@@ -22,7 +22,7 @@ create table customers (
 
 create table orders (
 	ord_no int,
-	purchase_amt number(10, 2);
+	purchase_amt dec(10, 2),
 	ord_date date,
 	customer_id int,
 	salesman_id int,
