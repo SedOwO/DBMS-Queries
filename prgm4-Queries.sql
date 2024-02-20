@@ -65,6 +65,7 @@ FOREIGN KEY (USN) REFERENCES STUDENT (USN),
 FOREIGN KEY (SUBCODE) REFERENCES SUBJECT (SUBCODE), 
 FOREIGN KEY (SSID) REFERENCES SEMSEC (SSID)
 );
+DESC IAMARKS;
 
 -- VALUE INSERTION 
 INSERT INTO STUDENT VALUES 	('1RN13CS020','AKSHAY','BELAGAVI', 8877881122,'M'),
@@ -81,6 +82,7 @@ INSERT INTO STUDENT VALUES 	('1RN13CS020','AKSHAY','BELAGAVI', 8877881122,'M'),
                             ('1RN16CS045','ISMAIL','KALBURGI', 9900232201,'M'),
                             ('1RN16CS088','SAMEERA','SHIMOGA', 9905542212,'F'),
                             ('1RN16CS122','VINAYAKA','CHIKAMAGALUR', 8800880011,'M');
+SELECT * FROM STUDENT;
 
 INSERT INTO SEMSEC VALUES 	('CSE8A', 8,'A'), 
                             ('CSE8B', 8,'B'),
@@ -113,6 +115,7 @@ INSERT INTO SEMSEC VALUES 	('CSE8A', 8,'A'),
                             ('CSE1A', 1,'A'),
                             ('CSE1B', 1,'B'), 
                             ('CSE1C', 1,'C');
+SELECT * FROM SEMSEC;
 
 INSERT INTO CLASS VALUES 	('1RN13CS020','CSE8A'), 
                             ('1RN13CS062','CSE8A'), 
@@ -128,6 +131,7 @@ INSERT INTO CLASS VALUES 	('1RN13CS020','CSE8A'),
                             ('1RN16CS045','CSE3A'),
                             ('1RN16CS088','CSE3B'), 
                             ('1RN16CS122','CSE3C');
+SELECT * FROM CLASS;
 
 INSERT INTO SUBJECT VALUES	('10CS81','ACA', 8, 4), 
                             ('10CS82','SSM', 8, 4), 
@@ -158,9 +162,76 @@ INSERT INTO SUBJECT VALUES	('10CS81','ACA', 8, 4),
                             ('15CS34','CO', 3, 4), 
                             ('15CS35','USP', 3, 3), 
                             ('15CS36','DMS', 3, 3);
+SELECT * FROM SUBJECT;
 
-INSERT INTO IAMARKS (USN, SUBCODE, SSID, TEST1, TEST2, TEST3) VALUES 	('1RN1CS091','10CS81','CSE8C', 15, 16, 18),
-                                                                        ('1RN1CS091','10CS82','CSE8C', 12, 19, 14),
-                                                                        ('1RN1CS091','10CS83','CSE8C', 19, 15, 20),
-                                                                        ('1RN1CS091','10CS84','CSE8C', 20, 16, 19),
-                                                                        ('1RN1CS091','10CS85','CSE8C', 15, 15, 12);
+INSERT INTO IAMARKS (USN, SUBCODE, SSID, TEST1, TEST2, TEST3) VALUES 	('1RN13CS091','10CS81','CSE8C', 15, 16, 18),
+                                                                        ('1RN13CS091','10CS82','CSE8C', 12, 19, 14),
+                                                                        ('1RN13CS091','10CS83','CSE8C', 19, 15, 20),
+                                                                        ('1RN13CS091','10CS84','CSE8C', 20, 16, 19),
+                                                                        ('1RN13CS091','10CS85','CSE8C', 15, 15, 12);
+
+SELECT * FROM IAMARKS;
+
+-- QUERIES
+-- Q1
+-- List all the student details studying in 
+-- fourth semester ‘C’ section
+SELECT S.*, SS.SEM, SS.SEC 
+FROM STUDENT S, SEMSEC SS, CLASS C 
+WHERE S.USN = C.USN 
+AND SS.SSID= C.SSID 
+AND SS.SEM = 4 
+AND SS.SEc='C';
+
+-- Q2
+-- Compute the total number of male and female 
+-- students in each semester and in each section.
+SELECT SS.SEM, SS.SEC, S.GENDER, COUNT(S.GENDER) AS COUNT 
+FROM STUDENT S, SEMSEC SS, CLASS C
+WHERE S.USN = C.USN 
+AND SS.SSID = C.SSID
+GROUP BY SS.SEM, SS.SEC, S.GENDER 
+ORDER BY SEM;
+
+-- Q3
+-- Create a view of Test1 marks of student 
+-- USN ‘1BI15CS101’ in allsubjects.
+CREATE VIEW STU_TEST1_MARKS_VIEW 
+AS
+SELECT TEST1, SUBCODE 
+FROM IAMARKS
+WHERE USN = '1RN13CS091';
+SELECT * FROM STU_TEST1_MARKS_VIEW;
+-- Q4
+-- Calculate the FinalIA (average of best two test marks) 
+-- and update the corresponding table for all students.
+-- Before Updating:
+UPDATE IAMARKS 
+SET FINALIA = (CASE 
+WHEN TEST1<TEST2 
+AND TEST1<TEST3 
+THEN ROUND((TEST2+TEST3)/2)
+WHEN TEST2<TEST3 
+THEN ROUND((TEST1+TEST3)/2)
+ELSE ROUND((TEST1+TEST2)/2)
+END)
+WHERE FINALIA IS NULL;
+SET SQL_SAFE_UPDATES = 0;
+-- Q5
+-- Categorize students based on the following criterion: 
+-- If FinalIA = 17 to 20 then CAT = ‘Outstanding’
+-- If FinalIA = 12 to 16 then CAT = ‘Average’ 
+-- If FinalIA< 12 then CAT = ‘Weak’
+-- Give these details only for 8th semester A, B, and C section students.\
+SELECT S.USN,S.SNAME,S.ADDRESS,S.PHONE,S.GENDER, (
+    CASE
+    WHEN IA.FINALIA BETWEEN 17 AND 20 THEN 'OUTSTANDING' 
+    WHEN IA.FINALIA BETWEEN 12 AND 16 THEN 'AVERAGE' 
+    ELSE 'WEAK'
+    END
+) AS CATEGORY
+FROM STUDENT S, SEMSEC SS, IAMARKS IA, SUBJECT SUB 
+WHERE S.USN = IA.USN 
+AND SS.SSID = IA.SSID 
+AND SUB.SUBCODE = IA.SUBCODE 
+AND SUB.SEM = 8;
