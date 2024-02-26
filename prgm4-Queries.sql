@@ -92,7 +92,7 @@ INSERT INTO SEMSEC VALUES 	('CSE8A', 8,'A'),
                             ('CSE7B', 7,'B'),
                             ('CSE7C', 7,'C'),
 
-                             ('CSE6A', 6,'A'), 
+                            ('CSE6A', 6,'A'), 
                             ('CSE6B', 6,'B'),
                             ('CSE6C', 6,'C'),
 
@@ -100,7 +100,7 @@ INSERT INTO SEMSEC VALUES 	('CSE8A', 8,'A'),
                             ('CSE5B', 5,'B'),
                             ('CSE5C', 5,'C'),
 
-                             ('CSE4A', 4,'A'),
+                            ('CSE4A', 4,'A'),
                             ('CSE4B', 4,'B'),
                             ('CSE4C', 4,'C'),
 
@@ -181,7 +181,7 @@ FROM STUDENT S, SEMSEC SS, CLASS C
 WHERE S.USN = C.USN 
 AND SS.SSID= C.SSID 
 AND SS.SEM = 4 
-AND SS.SEc='C';
+AND SS.SEC ='C';
 
 -- Q2
 -- Compute the total number of male and female 

@@ -1,0 +1,224 @@
+-- Consider the schema for Company Database:
+-- EMPLOYEE (SSN, Name, Address, Sex, Salary, SuperSSN, DNo) 
+-- DEPARTMENT (DNo, DName, MgrSSN, MgrStartDate) 
+-- DLOCATION (DNo,DLoc)
+-- PROJECT (PNo, PName, PLocation, DNo) 
+-- WORKS_ON (SSN, PNo, Hours)
+-- Write SQL queries to
+-- 1. Make a list of all project numbers for projects that involve an employee whose last 
+-- name is 'Scott', either as a worker or as a manager of the department that controls 
+-- the project.
+-- 2. Show the resulting salaries if every employee working on the 'IoT' project is given a 
+-- 10 percent raise.
+-- 3. Find the sum of the salaries of all employees of the 'Accounts' department, as well 
+-- as the maximum salary, the minimum salary, and the average salary in this 
+-- department
+-- 4. Retrieve the name of each employee who works on all the projects controlled by 
+-- department number 5 (use NOT EXISTS operator). For each department that has 
+-- more than five employees, retrieve the department number and the number of its 
+-- employees who are making more than Rs. 6,00,000
+DROP database COMPANY;
+CREATE DATABASE COMPANY;
+USE COMPANY;
+
+-- TABLE CREATION
+CREATE TABLE DEPARTMENT (
+DNO VARCHAR (20), 
+DNAME VARCHAR (20), 
+MGRSTARTDATE DATE,
+MGRSSN VARCHAR(20),
+PRIMARY KEY (DNO)
+);
+
+CREATE TABLE EMPLOYEE (
+SSN VARCHAR (20), 
+FNAME VARCHAR (20),
+LNAME VARCHAR (20),
+ADDRESS VARCHAR (20),
+SEX CHAR (1), 
+SALARY INTEGER,
+SUPERSSN VARCHAR (20),
+DNO VARCHAR (20),
+PRIMARY KEY (SSN),
+FOREIGN KEY (SUPERSSN) REFERENCES EMPLOYEE (SSN), 
+FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO)
+);
+
+-- NOTE: Once DEPARTMENT and EMPLOYEE tables are created 
+-- we must alter department table to add foreign constraint 
+-- MGRSSN using sql command
+-- ALTER TABLE DEPARTMENT
+-- ADD MGRSSN REFERENCES EMPLOYEE (SSN);
+ALTER TABLE DEPARTMENT 
+ADD CONSTRAINT 
+FOREIGN KEY (MGRSSN) 
+REFERENCES EMPLOYEE(SSN);
+
+CREATE TABLE DLOCATION (
+DLOC VARCHAR (20),
+DNO VARCHAR (20),
+PRIMARY KEY (DNO, DLOC),
+FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO)
+);
+
+CREATE TABLE PROJECT (
+PNO BIGINT, 
+PNAME VARCHAR (20),
+PLOCATION VARCHAR (20),
+DNO VARCHAR (20),
+PRIMARY KEY (PNO),
+FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO)
+);
+
+CREATE TABLE WORKS_ON (
+HOURS INT(2),
+SSN VARCHAR (20),
+PNO BIGINT, 
+PRIMARY KEY (SSN, PNO),
+FOREIGN KEY (SSN) REFERENCES EMPLOYEE (SSN), 
+FOREIGN  KEY (PNO) REFERENCES PROJECT(PNO) 
+);
+
+-- INSERTION
+INSERT INTO EMPLOYEE (SSN, FNAME, LNAME, ADDRESS, SEX, SALARY) VALUES 	('JSSECE01','JOHN','SCOTT','BANGALORE','M', 450000),
+																		('JSSCSE01','JAMES','SMITH','BANGALORE','M', 500000),
+																		('JSSCSE02','HEARN','BAKER','BANGALORE','M', 700000),
+																		('JSSCSE03','EDWARD','SCOTT','MYSORE','M', 500000),
+																		('JSSCSE04','PAVAN','HEGDE','MANGALORE','M', 650000),
+																		('JSSCSE05','GIRISH','MALYA','MYSORE','M', 450000),
+																		('JSSCSE06','NEHA','SN','BANGALORE','F', 800000),
+																		('JSSACC01','AHANA','K','MANGALORE','F', 350000),
+																		('JSSACC02','SANTHOSH','KUMAR','MANGALORE','M', 300000),
+																		('JSSISE01','VEENA','M','MYSORE','M', 600000),
+																		('JSSIT01','NAGESH','HR','BANGALORE','M', 500000);
+INSERT INTO DEPARTMENT VALUES 	('1','ACCOUNTS','01-JAN-01','JSSACC02'), 
+								('2','IT','01-AUG-16','JSSIT01'),
+								('3','ECE','01-JUN-08','JSSECE01'), 
+								('4','ISE','01-AUG-15','JSSISE01'), 
+								('5','CSE','01-JUN-02','JSSCSE05');
+								
+UPDATE EMPLOYEE SET 
+SUPERSSN=NULL, DNO='3' 
+WHERE SSN='JSSECE01';
+UPDATE EMPLOYEE SET 
+SUPERSSN='JSSCSE02', DNO='5' 
+WHERE SSN='JSSCSE01';
+UPDATE EMPLOYEE SET 
+SUPERSSN='JSSCSE03', DNO='5' 
+WHERE SSN='JSSCSE02';
+UPDATE EMPLOYEE SET 
+SUPERSSN='JSSCSE04', DNO='5' 
+WHERE SSN='JSSCSE03';
+UPDATE EMPLOYEE SET 
+DNO='5', SUPERSSN='JSSCSE05' 
+WHERE SSN='JSSCSE04';
+UPDATE EMPLOYEE SET 
+DNO='5', SUPERSSN='JSSCSE06' 
+WHERE SSN='JSSCSE05';
+UPDATE EMPLOYEE SET 
+DNO='5', SUPERSSN=NULL 
+WHERE SSN='JSSCSE06';
+UPDATE EMPLOYEE SET 
+DNO='1', SUPERSSN='JSSACC02' 
+WHERE SSN='JSSACC01';
+UPDATE EMPLOYEE SET 
+DNO='1', SUPERSSN=NULL 
+WHERE SSN='JSSACC02';
+UPDATE EMPLOYEE SET 
+DNO='4', SUPERSSN=NULL 
+WHERE SSN='JSSISE01';
+UPDATE EMPLOYEE SET 
+DNO='2', SUPERSSN=NULL 
+WHERE SSN='JSSIT01';
+
+INSERT INTO DLOCATION VALUES ('BANGALORE', '1'),
+INSERT INTO DLOCATION VALUES ('BANGALORE', '2'),
+INSERT INTO DLOCATION VALUES ('BANGALORE', '3'),
+INSERT INTO DLOCATION VALUES ('MANGALORE', '4'),
+INSERT INTO DLOCATION VALUES ('MANGALORE', '5');
+
+INSERT INTO PROJECT VALUES (100,'IOT','BANGALORE','5'); 
+INSERT INTO PROJECT VALUES (101,'CLOUD','BANGALORE','5'); 
+INSERT INTO PROJECT VALUES (102,'BIGDATA','BANGALORE','5'); 
+INSERT INTO PROJECT VALUES (103,'SENSORS','BANGALORE','3');
+INSERT INTO PROJECT VALUES (104,'BANK MANAGEMENT','BANGALORE','1'); 
+INSERT INTO PROJECT VALUES (105,'SALARY MANAGEMENT','BANGALORE','1'); 
+INSERT INTO PROJECT VALUES (106,'OPENSTACK','BANGALORE','4');
+INSERT INTO PROJECT VALUES (107,'SMART CITY','BANGALORE','2');
+
+INSERT INTO WORKS_ON VALUES (4, 'JSSCSE01', 100); 
+INSERT INTO WORKS_ON VALUES (6, 'JSSCSE01', 101); 
+INSERT INTO WORKS_ON VALUES (8, 'JSSCSE01', 102); 
+INSERT INTO WORKS_ON VALUES (10, 'JSSCSE02', 100); 
+INSERT INTO WORKS_ON VALUES (3, 'JSSCSE04', 100); 
+INSERT INTO WORKS_ON VALUES (4, 'JSSCSE05', 101); 
+INSERT INTO WORKS_ON VALUES (5, 'JSSCSE06', 102); 
+INSERT INTO WORKS_ON VALUES (6, 'JSSCSE03', 102); 
+INSERT INTO WORKS_ON VALUES (7, 'JSSECE01', 103); 
+INSERT INTO WORKS_ON VALUES (5, 'JSSACC01', 104); 
+INSERT INTO WORKS_ON VALUES (6, 'JSSACC02', 105); 
+INSERT INTO WORKS_ON VALUES (4, 'JSSISE01', 106); 
+INSERT INTO WORKS_ON VALUES (10, 'JSSIT01', 107);
+
+-- QUERIES
+-- Q1
+-- Make a list of all project numbers for projects that involve an 
+-- employee whose last name is 'Scott', either as a worker or as a 
+-- manager of the department that controls the project.
+(SELECT DISTINCT P.PNO
+FROM PROJECT P, DEPARTMENT D, EMPLOYEE E 
+WHERE E.DNO=D.DNO
+AND D.MGRSSN=E.SSN 
+AND E.LNAME='SCOTT') 
+UNION
+(SELECT DISTINCT P1.PNO
+FROM PROJECT P1, WORKS_ON W, EMPLOYEE E1 
+WHERE P1.PNO=W.PNO
+AND E1.SSN=W.SSN
+AND E1.LNAME='SCOTT');
+
+-- Q2
+-- Show the resulting salaries if every employee working on the 'IoT' 
+-- project is given a 10 percent raise.
+SELECT E.FNAME, E.LNAME, 1.1*E.SALARY AS "INCREASED_SALARY" 
+FROM EMPLOYEE E, WORKS_ON W, PROJECT P
+WHERE E.SSN=W.SSN 
+AND W.PNO=P.PNO 
+AND P.PNAME='IOT';
+
+-- Q3
+-- Find the sum of the salaries of all employees of the 'Accounts' department, 
+-- as well as the maximum salary, the minimum salary, and the average 
+-- salary in this department.
+SELECT SUM (E.SALARY) "SUM", MAX (E.SALARY) "MAXIMUM", 
+MIN (E.SALARY) "MINIMUM", AVG (E.SALARY) "AVERAGE"
+FROM EMPLOYEE E, DEPARTMENT D 
+WHERE E.DNO=D.DNO
+AND D.DNAME='ACCOUNTS';
+
+-- Q4
+-- Retrieve the name of each employee who works on all the projects Controlled by 
+-- department number 5 (use NOT EXISTS operator).
+SELECT E.FNAME, E.LNAME 
+FROM EMPLOYEE E
+WHERE NOT EXISTS	((SELECT PNO
+					FROM PROJECT
+					WHERE DNO='5') 
+					MINUS 
+					(SELECT PNO 
+					FROM WORKS_ON 
+					WHERE E.SSN=SSN));
+					
+-- Q5
+-- For each department that has more than five employees, retrieve the 
+-- department number and the number of its employees who are making 
+-- more than Rs. 6,00,000
+SELECT D.DNO, COUNT (*) “NUMBER OF EMPLOYEES”
+FROM DEPARTMENT D, EMPLOYEE E 
+WHERE D.DNO=E.DNO
+AND E.SALARY>600000
+AND D.DNO IN (SELECT E1.DNO 
+FROM EMPLOYEE E1 
+GROUP BY E1.DNO 
+HAVING COUNT (*)>5)
+GROUP BY D.DNO;
